@@ -27,6 +27,7 @@ class _RecipePageState extends State<RecipePage> {
   late final Map<String, List<Map<String, dynamic>>> recipes = RecipeData.getRecipes();
   final Random _random = Random();
 
+  //picks a random recipe
   void generateRecipe() {
     final categoryRecipes = recipes[selectedCategory];
 
@@ -68,20 +69,31 @@ class _RecipePageState extends State<RecipePage> {
                   ),
                 ),
                 SizedBox(height: 12),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: categories.map((cat) {
-                    return ChoiceChip(
-                      label: Text(cat),
-                      selected: selectedCategory == cat,
-                      onSelected: (_) {
-                        setState(() {
-                          selectedCategory = cat;
-                        });
-                      },
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final checkboxWidth = (constraints.maxWidth - 16) / 2;
+                    return Wrap(
+                      spacing: 16,
+                      runSpacing: 8,
+                      children: categories.map((cat) {
+                        final isSelected = selectedCategory == cat;
+                        return SizedBox(
+                          width: checkboxWidth,
+                          child: CheckboxListTile(
+                            title: Text(cat),
+                            dense: true,
+                            controlAffinity: ListTileControlAffinity.leading,
+                            value: isSelected,
+                            onChanged: (checked) {
+                              if ((checked ?? false)) {
+                                setState(() => selectedCategory = cat);
+                              }
+                            },
+                          ),
+                        );
+                      }).toList(),
                     );
-                  }).toList(),
+                  },
                 ),
                 SizedBox(height: 24),
                 Center(
