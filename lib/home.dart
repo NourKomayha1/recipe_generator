@@ -1,10 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'dart:math';
-import 'data/recipes.dart';
+import 'package:http/http.dart' as http;
+import 'package:recipe_generator/admin.dart';
 
 class RecipePage extends StatefulWidget {
+  const RecipePage({super.key});
+
   @override
-  _RecipePageState createState() => _RecipePageState();
+  State<RecipePage> createState() => _RecipePageState();
 }
 
 class _RecipePageState extends State<RecipePage> {
@@ -24,33 +28,55 @@ class _RecipePageState extends State<RecipePage> {
   List<String> ingredients = [];
   List<String> steps = [];
 
-  late final Map<String, List<Map<String, dynamic>>> recipes = RecipeData.getRecipes();
-  final Random _random = Random();
+  Future<void> generateRecipe() async {
+    final url = Uri.parse(
+        "http://nourz.atwebpages.com/get_random_recipe.php?category=$selectedCategory");
 
-  //picks a random recipe
-  void generateRecipe() {
-    final categoryRecipes = recipes[selectedCategory];
+    try {
+      final response = await http.get(url);
 
-    if (categoryRecipes == null || categoryRecipes.isEmpty) {
-      return;
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (!mounted) return;
+        if (data.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("No recipes found for this category")),
+          );
+          return;
+        }
+
+        setState(() {
+          recipeName = data['name'];
+          description = data['description'];
+          ingredients = List<String>.from(data['ingredients']);
+          steps = List<String>.from(data['steps']);
+        });
+      } else {
+        debugPrint("Server error: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("Error: $e");
     }
-
-    final recipe = categoryRecipes[_random.nextInt(categoryRecipes.length)];
-
-    setState(() {
-      recipeName = recipe['name'] as String;
-      description = recipe['desc'] as String;
-      ingredients = List<String>.from(recipe['ingredients'] as List);
-      steps = List<String>.from(recipe['steps'] as List);
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('🍽️ Random Recipe Generator'),
+        title: const Text('🍽️ Random Recipe Generator'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.admin_panel_settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AdminPage()),
+              );
+            },
+          ),
+        ],
       ),
       body: Container(
         color: Colors.grey.shade50,
@@ -68,7 +94,7 @@ class _RecipePageState extends State<RecipePage> {
                     color: Colors.grey.shade800,
                   ),
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
                 LayoutBuilder(
                   builder: (context, constraints) {
                     final checkboxWidth = (constraints.maxWidth - 16) / 2;
@@ -95,18 +121,19 @@ class _RecipePageState extends State<RecipePage> {
                     );
                   },
                 ),
-                SizedBox(height: 24),
+                const SizedBox(height: 24),
                 Center(
                   child: ElevatedButton.icon(
                     onPressed: generateRecipe,
-                    icon: Icon(Icons.shuffle),
-                    label: Text('Generate Recipe'),
+                    icon: const Icon(Icons.shuffle),
+                    label: const Text('Generate Recipe'),
                     style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
                     ),
                   ),
                 ),
-                SizedBox(height: 30),
+                const SizedBox(height: 30),
                 if (recipeName.isNotEmpty) ...[
                   Card(
                     elevation: 2,
@@ -126,7 +153,7 @@ class _RecipePageState extends State<RecipePage> {
                               color: Colors.grey.shade800,
                             ),
                           ),
-                          SizedBox(height: 8),
+                          const SizedBox(height: 8),
                           Text(
                             '✏️ $description',
                             style: TextStyle(
@@ -134,9 +161,9 @@ class _RecipePageState extends State<RecipePage> {
                               color: Colors.grey.shade600,
                             ),
                           ),
-                          SizedBox(height: 20),
-                          Divider(),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 20),
+                          const Divider(),
+                          const SizedBox(height: 16),
                           Text(
                             '🧂 Ingredients:',
                             style: TextStyle(
@@ -145,23 +172,24 @@ class _RecipePageState extends State<RecipePage> {
                               color: Colors.grey.shade800,
                             ),
                           ),
-                          SizedBox(height: 12),
+                          const SizedBox(height: 12),
                           ...ingredients.map((item) => Padding(
-                            padding: EdgeInsets.only(bottom: 8),
-                            child: Row(
-                              children: [
-                                Icon(Icons.circle, size: 8, color: Colors.teal),
-                                SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    item,
-                                    style: TextStyle(fontSize: 15),
-                                  ),
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.circle,
+                                        size: 8, color: Colors.teal),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        item,
+                                        style: const TextStyle(fontSize: 15),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          )),
-                          SizedBox(height: 20),
+                              )),
+                          const SizedBox(height: 20),
                           Text(
                             '👨‍🍳 Steps:',
                             style: TextStyle(
@@ -170,40 +198,40 @@ class _RecipePageState extends State<RecipePage> {
                               color: Colors.grey.shade800,
                             ),
                           ),
-                          SizedBox(height: 12),
+                          const SizedBox(height: 12),
                           ...steps.asMap().entries.map((e) => Padding(
-                            padding: EdgeInsets.only(bottom: 12),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width: 28,
-                                  height: 28,
-                                  decoration: BoxDecoration(
-                                    color: Colors.teal,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      '${e.key + 1}',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      width: 28,
+                                      height: 28,
+                                      decoration: const BoxDecoration(
+                                        color: Colors.teal,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          '${e.key + 1}',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        e.value,
+                                        style: const TextStyle(fontSize: 15),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    e.value,
-                                    style: TextStyle(fontSize: 15),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )),
+                              )),
                         ],
                       ),
                     ),
@@ -217,4 +245,3 @@ class _RecipePageState extends State<RecipePage> {
     );
   }
 }
-

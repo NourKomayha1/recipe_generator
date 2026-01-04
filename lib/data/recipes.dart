@@ -1335,6 +1335,31 @@ class RecipeData {
           ],
         },
       ],
+      'Lebanese': [
+    {
+      'name': 'Pancakes',
+      'desc': 'Fluffy pancakes perfect for a morning treat.',
+      'ingredients': [
+        '1 cup all-purpose flour',
+        '2 tablespoons sugar',
+        '2 teaspoons baking powder',
+        '1/2 teaspoon salt',
+        '1 cup milk',
+        '1 large egg',
+        '2 tablespoons melted butter'
+      ],
+      'steps': [
+        'Mix dry ingredients in a bowl',
+        'In another bowl, whisk milk, egg, and melted butter',
+        'Combine wet and dry ingredients until just mixed',
+        'Heat a non-stick pan over medium heat',
+        'Pour 1/4 cup batter for each pancake',
+        'Cook until bubbles form, then flip',
+        'Cook until golden brown on both sides'
+      ],
+    },
+     ],
+
     };
   }
 }

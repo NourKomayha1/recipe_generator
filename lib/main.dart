@@ -9,7 +9,6 @@ class RandomRecipeApp extends StatelessWidget {
     return MaterialApp(
       title: 'Random Recipe Generator',
       theme: ThemeData(
-        primarySwatch: Colors.teal,
         fontFamily: 'Arial',
       ),
       home: RecipePage(),
